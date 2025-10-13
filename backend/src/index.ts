@@ -18,7 +18,7 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/get-presigned-url", async (req, res) => {
-  const fileName = uuidv4();
+  const fileName = `raw-format/${uuidv4()}`;
   const url = await getS3SignedUrl(fileName);
   res.status(200).json({
     msg: "Recived S3 url",

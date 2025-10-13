@@ -7,13 +7,14 @@ ffmpeg.setFfmpegPath(
 
 export async function convertAllResolutions(
   inputPath: string,
-  outputPath: string
+  outputPath: string,
+  key: string
 ) {
-  await convertToResolution(inputPath, `${outputPath}/output_1080p.mp4`, 1080);
-  await convertToResolution(inputPath, `${outputPath}/output_720p.mp4`, 720);
-  await convertToResolution(inputPath, `${outputPath}/output_480p.mp4`, 480);
-  await convertToResolution(inputPath, `${outputPath}/output_240p.mp4`, 240);
-  await convertToResolution(inputPath, `${outputPath}/output_144p.mp4`, 144);
+  await convertToResolution(inputPath, `${outputPath}/1080p${key}`, 1080);
+  await convertToResolution(inputPath, `${outputPath}/720p${key}`, 720);
+  await convertToResolution(inputPath, `${outputPath}/480p${key}`, 480);
+  await convertToResolution(inputPath, `${outputPath}/240p${key}`, 240);
+  await convertToResolution(inputPath, `${outputPath}/144p${key}`, 144);
 }
 
 function convertToResolution(

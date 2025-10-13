@@ -9,7 +9,8 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
   bucket = aws_s3_bucket.bucket.id
 
   queue {
-    queue_arn = var.sqs_arn
-    events    = ["s3:ObjectCreated:*"]
+    queue_arn     = var.sqs_arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_prefix = "raw-format/"
   }
 }
