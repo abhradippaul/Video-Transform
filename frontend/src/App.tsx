@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "react-router-dom";
+import ImageUploader from "./modules/select-file";
 
 function App() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +27,7 @@ function App() {
           <Button>Click me</Button>
           <Button>Click me</Button>
         </div>
+        {searchParams.get("type") && <ImageUploader maxSizeMB={90} />}
       </div>
     </div>
   );
