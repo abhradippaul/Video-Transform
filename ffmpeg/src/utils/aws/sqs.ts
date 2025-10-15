@@ -4,17 +4,18 @@ import { AWS } from "./aws.js";
 import { downloadS3File } from "./s3.js";
 import fs from "fs";
 import { convertAllResolutions } from "../handle-video/convert-video.js";
+import { createThumnail } from "../handle-video/thumbnail.js";
 
 const s3UploadNotificationSQS = new AWS.SQS();
 const queueUrl = process.env.AWS_S3_UPLOAD_SQS!;
-const outputPath = "./videos/output";
+// const outputPath = "./videos/output";
 
 const paramsReceiveMessage = {
   QueueUrl: queueUrl,
   MaxNumberOfMessages: 10,
   VisibilityTimeout: 30,
   WaitTimeSeconds: 20,
-  // MessageAttributeNames: ["welcome_mail"],
+  // MessageAttributeNames: ["type"],
 };
 
 export async function pollMessages() {
@@ -30,40 +31,39 @@ async function reciveMessage() {
       .promise();
     if ($response.error) {
       console.error("Error receiving messages:", $response.error);
-    } else if (Messages?.length) {
-      Messages?.forEach((message) => {
-        const body = JSON.parse(message?.Body || "");
-        const s3Event = body.Records[0].s3;
-        const s3EventMsgKey = s3Event.object.key;
-        const localS3Key = s3EventMsgKey.split("/")[1];
-        console.log("Message Attributes:", s3EventMsgKey);
-        downloadS3File(s3EventMsgKey, `videos/input/${localS3Key}`).then(
-          async () => {
-            console.log(s3EventMsgKey);
-            const inputPath = `./videos/input/${localS3Key}`;
-            convertAllResolutions(inputPath, outputPath, localS3Key)
-              .then(() => {
-                deleteMessage(message?.ReceiptHandle || "").then(() => {
-                  fs.unlink(`videos/input/${localS3Key}`, (err) => {
-                    if (err) throw err;
-                    console.log("path/file.txt was deleted");
-                  });
-                });
-                console.log("Video conversion completed");
-              })
-              .catch((err) => {
-                console.log("Error occured during video conversion ", err);
-              });
-          }
-        );
-      });
+      return null;
     }
+    Messages?.forEach((message) => {
+      const body = JSON.parse(message?.Body || "");
+      // console.log(body);
+      const s3Event = body.Records[0].s3;
+      const s3EventMsgKey = s3Event.object.key || "";
+      const localS3Key = s3EventMsgKey.split("/")[2] || "";
+      // console.log("Message Attributes:", s3EventMsgKey);
+      if (s3EventMsgKey.includes("thumbnail")) {
+        // console.log(localS3Key);
+        const thumbnailLocation = `videos/input/thumbnail/${localS3Key}`;
+        downloadS3File(s3EventMsgKey, thumbnailLocation);
+        createThumnail(localS3Key);
+        // deleteMessage(message?.ReceiptHandle || "");
+      }
+      // const inputPath = `./videos/input/${localS3Key}`;
+      //     convertAllResolutions(inputPath, outputPath, localS3Key)
+      //       .then(() => {
+      //         deleteMessage(message?.ReceiptHandle || "").then(() => {
+      //           fs.unlink(`videos/input/${localS3Key}`, (err) => {
+      //             if (err) throw err;
+      //             console.log("path/file.txt was deleted");
+      //           });
+      //         });
+      //         console.log("Video conversion completed");
+    });
   } catch (err) {
     console.log(err);
   }
 }
 
-async function deleteMessage(receiptHandle: string) {
+function deleteMessage(receiptHandle: string) {
   try {
     const deleteParams = {
       QueueUrl: queueUrl,
