@@ -21,7 +21,7 @@ function App() {
           if (s3PutUrl.data?.data?.url) {
             console.log(s3PutUrl.data?.data?.fileName);
             setSearchParams((prev) => {
-              prev.set("fileName", s3PutUrl.data?.data?.fileName);
+              prev.set("fileName", `${s3PutUrl.data?.data?.fileName}.jpeg`);
               return prev;
             });
             await axios.put(s3PutUrl.data?.data?.url, file, {

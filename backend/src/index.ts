@@ -28,13 +28,13 @@ app.post("/video/put-presigned-url", async (req, res) => {
   const { mime, type } = req.body;
 
   const timestamp = Date.now();
-  const fileName = `raw-format/${type}/${timestamp}.${mime}`;
+  const fileName = `${type}/${timestamp}.${mime}`;
   const url = await putS3SignedUrl(fileName);
 
   res.status(200).json({
     msg: "Recived S3 url",
     url,
-    fileName,
+    fileName: timestamp,
   });
 });
 

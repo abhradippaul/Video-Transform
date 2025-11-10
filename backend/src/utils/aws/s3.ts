@@ -6,7 +6,7 @@ import { s3Client } from "./aws.js";
 
 export async function putS3SignedUrl(key: string) {
   const getObjectParams = {
-    Bucket: process.env.AWS_BUCKET_NAME,
+    Bucket: process.env.AWS_RAW_BUCKET_NAME,
     Key: key,
   };
   const command = new PutObjectCommand(getObjectParams);

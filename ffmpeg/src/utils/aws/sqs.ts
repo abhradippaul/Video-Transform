@@ -1,21 +1,28 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { AWS } from "./aws.js";
-import { downloadS3File } from "./s3.js";
-import fs from "fs";
-import { convertAllResolutions } from "../handle-video/convert-video.js";
-import { createThumnail } from "../handle-video/thumbnail.js";
+import { handleThumbnailEvent } from "../events.js";
+
+interface S3EventRecord {
+  s3: {
+    object: {
+      key: string;
+    };
+  };
+}
+
+interface S3EventBody {
+  Records: S3EventRecord[];
+}
 
 const s3UploadNotificationSQS = new AWS.SQS();
 const queueUrl = process.env.AWS_S3_UPLOAD_SQS!;
-// const outputPath = "./videos/output";
 
 const paramsReceiveMessage = {
   QueueUrl: queueUrl,
   MaxNumberOfMessages: 10,
   VisibilityTimeout: 30,
   WaitTimeSeconds: 20,
-  // MessageAttributeNames: ["type"],
 };
 
 export async function pollMessages() {
@@ -26,40 +33,35 @@ export async function pollMessages() {
 
 async function reciveMessage() {
   try {
-    const { $response, Messages } = await s3UploadNotificationSQS
+    const { Messages } = await s3UploadNotificationSQS
       .receiveMessage(paramsReceiveMessage)
       .promise();
-    if ($response.error) {
-      console.error("Error receiving messages:", $response.error);
-      return null;
+
+    if (!Messages || !Messages.length) {
+      console.log("No messages received.");
+      return;
     }
-    Messages?.forEach((message) => {
-      const body = JSON.parse(message?.Body || "");
-      // console.log(body);
-      const s3Event = body.Records[0].s3;
-      const s3EventMsgKey = s3Event.object.key || "";
-      const localS3Key = s3EventMsgKey.split("/")[2] || "";
-      // console.log("Message Attributes:", s3EventMsgKey);
-      if (s3EventMsgKey.includes("thumbnail")) {
-        // console.log(localS3Key);
-        const thumbnailLocation = `videos/input/thumbnail/${localS3Key}`;
-        downloadS3File(s3EventMsgKey, thumbnailLocation);
-        createThumnail(localS3Key);
-        // deleteMessage(message?.ReceiptHandle || "");
+
+    for (const message of Messages) {
+      if (!message.Body) continue;
+
+      const body: S3EventBody = JSON.parse(message.Body);
+
+      const s3Key = body?.Records?.[0]?.s3?.object?.key;
+      if (!s3Key) continue;
+
+      console.log("📩 Processing S3 Key:", s3Key);
+
+      if (s3Key.includes("thumbnail")) {
+        await handleThumbnailEvent(s3Key);
+      } else if (s3Key.includes("gif")) {
+        // TODO: handle GIF event logic
       }
-      // const inputPath = `./videos/input/${localS3Key}`;
-      //     convertAllResolutions(inputPath, outputPath, localS3Key)
-      //       .then(() => {
-      //         deleteMessage(message?.ReceiptHandle || "").then(() => {
-      //           fs.unlink(`videos/input/${localS3Key}`, (err) => {
-      //             if (err) throw err;
-      //             console.log("path/file.txt was deleted");
-      //           });
-      //         });
-      //         console.log("Video conversion completed");
-    });
+
+      deleteMessage(message.ReceiptHandle!);
+    }
   } catch (err) {
-    console.log(err);
+    console.log("Error processing SQS messages: ", err);
   }
 }
 
