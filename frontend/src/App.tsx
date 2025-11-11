@@ -1,43 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "react-router-dom";
-import ImageUploader from "./modules/video-upload";
-import axios from "axios";
 import { useState } from "react";
-import { useS3PutUrl } from "./custom-hooks/presigned-url/use-s3Url";
+import Thumbnail from "./modules/thumbnail";
+import GifComponent from "./modules/gif";
+import HLSComponent from "./modules/hls";
 
 function App() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-  const s3PutUrl = useS3PutUrl();
-
-  const onCreateVideoThumbnail = async (file: File | null) => {
-    const type = searchParams.get("type");
-    try {
-      setIsLoading(true);
-      if (file && type) {
-        const mime = file.type.split("/")[1];
-        if (mime) {
-          s3PutUrl.mutate({ mime, type });
-          if (s3PutUrl.data?.data?.url) {
-            console.log(s3PutUrl.data?.data?.fileName);
-            setSearchParams((prev) => {
-              prev.set("fileName", `${s3PutUrl.data?.data?.fileName}.jpeg`);
-              return prev;
-            });
-            await axios.put(s3PutUrl.data?.data?.url, file, {
-              headers: {
-                "Content-Type": file.type || "application/octet-stream",
-              },
-            });
-          }
-        }
-      }
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [transformedUrl, setTransformedUrl] = useState("");
 
   return (
     <div className="w-screen h-screen flex items-center justify-center">
@@ -48,6 +19,7 @@ function App() {
         <div className="size-full flex items-center justify-between">
           <Button
             onClick={() => {
+              setTransformedUrl("");
               setSearchParams((prev) => {
                 prev.set("type", "thumbnail");
                 return prev;
@@ -58,6 +30,7 @@ function App() {
           </Button>
           <Button
             onClick={() => {
+              setTransformedUrl("");
               setSearchParams((prev) => {
                 prev.set("type", "gif");
                 return prev;
@@ -68,6 +41,7 @@ function App() {
           </Button>
           <Button
             onClick={() => {
+              setTransformedUrl("");
               setSearchParams((prev) => {
                 prev.set("type", "hls");
                 return prev;
@@ -78,6 +52,7 @@ function App() {
           </Button>
           <Button
             onClick={() => {
+              setTransformedUrl("");
               setSearchParams((prev) => {
                 prev.set("type", "image-resize");
                 return prev;
@@ -88,12 +63,33 @@ function App() {
           </Button>
           <Button>Click me</Button>
         </div>
-        {searchParams.get("type") &&
-          (isLoading ? (
-            <h1>Loading...</h1>
-          ) : (
-            <ImageUploader onUpload={onCreateVideoThumbnail} />
-          ))}
+
+        {isLoading && <h1>Loading....</h1>}
+
+        {searchParams.get("type") === "thumbnail" && !isLoading && (
+          <Thumbnail
+            setIsLoading={setIsLoading}
+            setSearchParams={setSearchParams}
+            setTransformedUrl={setTransformedUrl}
+            transformedUrl={transformedUrl}
+          />
+        )}
+        {searchParams.get("type") === "gif" && !isLoading && (
+          <GifComponent
+            setIsLoading={setIsLoading}
+            setSearchParams={setSearchParams}
+            setTransformedUrl={setTransformedUrl}
+            transformedUrl={transformedUrl}
+          />
+        )}
+        {searchParams.get("type") === "hls" && !isLoading && (
+          <HLSComponent
+            setIsLoading={setIsLoading}
+            setSearchParams={setSearchParams}
+            setTransformedUrl={setTransformedUrl}
+            transformedUrl={transformedUrl}
+          />
+        )}
       </div>
     </div>
   );

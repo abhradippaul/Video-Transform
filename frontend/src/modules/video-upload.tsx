@@ -4,9 +4,10 @@ import React, { useState } from "react";
 
 interface VideoUploadProps {
   onUpload: (file: File | null) => void;
+  fileType: string;
 }
 
-const VideoUpload: React.FC<VideoUploadProps> = ({ onUpload }) => {
+const VideoUpload: React.FC<VideoUploadProps> = ({ onUpload, fileType }) => {
   const [dragging, setDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -23,27 +24,19 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUpload }) => {
     e.preventDefault();
     setDragging(false);
     const file = e.dataTransfer.files[0];
-    // if (file && file.type.startsWith("video/")) {
-    //   setSelectedFile(file);
-    //   // onUpload(file);
-    // } else {
-    //   alert("Please drop a valid video file.");
-    // }
-    if (file) {
+    if (file && file.type.startsWith(`${fileType}/`)) {
       setSelectedFile(file);
+    } else {
+      alert("Please drop a valid video file.");
     }
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    // if (file && file.type.startsWith("video/")) {
-    //   setSelectedFile(file);
-    //   // onUpload(file);
-    // } else {
-    //   alert("Please select a valid video file.");
-    // }
-    if (file) {
+    if (file && file.type.startsWith(`${fileType}/`)) {
       setSelectedFile(file);
+    } else {
+      alert("Please select a valid video file.");
     }
   };
 

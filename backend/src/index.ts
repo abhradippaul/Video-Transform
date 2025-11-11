@@ -3,10 +3,12 @@ dotenv.config();
 
 import cors from "cors";
 import express, { urlencoded } from "express";
-import { putS3SignedUrl } from "./utils/aws/s3.js";
+import { getS3SignedUrl, putS3SignedUrl } from "./utils/aws/s3.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+const CLOUDFRONT = process.env.CLOUDFRONT || "";
+const CLOUDFRONT_URL = process.env.CLOUDFRONT_URL || "";
 
 app.use(cors());
 app.use(express.json());
@@ -16,7 +18,7 @@ app.get("/", async (req, res) => {
   res.json({ msg: "hello" });
 });
 
-app.post("/video/put-presigned-url", async (req, res) => {
+app.post("/raw/put-presigned-url", async (req, res) => {
   const body = req.body;
 
   if (!body?.mime || !body?.type) {
@@ -38,25 +40,32 @@ app.post("/video/put-presigned-url", async (req, res) => {
   });
 });
 
-app.post("/image/put-presigned-url", async (req, res) => {
-  const body = req.body;
+app.get("/transformed/get-presigned-url", async (req, res) => {
+  const query = req.query;
 
-  if (!body?.mime) {
+  if (!query.type || !query.fileName) {
     return res.status(400).json({
-      msg: "Missing mime type",
+      msg: "Query not found",
     });
   }
 
-  const { mime } = req.body;
+  let s3Url = "";
 
-  const timestamp = Date.now();
-  const fileName = `image/${timestamp}.${mime}`;
-  const url = await putS3SignedUrl(fileName);
+  if (CLOUDFRONT === "true") {
+    s3Url = `https://${CLOUDFRONT_URL}/${query.type}/${query.fileName}`;
+  } else if (CLOUDFRONT === "false") {
+    s3Url = await getS3SignedUrl(`${query.type}/${query.fileName}`);
+  }
+
+  if (!s3Url) {
+    return res.status(400).json({
+      msg: "File not found",
+    });
+  }
 
   res.status(200).json({
-    msg: "Recived S3 url",
-    url,
-    fileName,
+    url: s3Url,
+    msg: "File found",
   });
 });
 

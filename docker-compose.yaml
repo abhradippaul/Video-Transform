@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  frontend:
+    image: abhradippaul/video-transform:frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+
+  backend:
+    image: abhradippaul/video-transform:backend
+    container_name: backend
+    ports:
+      - "8000:8000"
+
+  ffmpeg:
+    image: abhradippaul/video-transform:ffmpeg
+    container_name: ffmpeg
+    ports:
+      - "8000:8000"

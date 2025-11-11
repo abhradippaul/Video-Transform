@@ -1,7 +1,11 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { AWS } from "./aws.js";
-import { handleThumbnailEvent } from "../events.js";
+import {
+  handleGifEvent,
+  handleHLSEvent,
+  handleThumbnailEvent,
+} from "../events.js";
 
 interface S3EventRecord {
   s3: {
@@ -55,7 +59,9 @@ async function reciveMessage() {
       if (s3Key.includes("thumbnail")) {
         await handleThumbnailEvent(s3Key);
       } else if (s3Key.includes("gif")) {
-        // TODO: handle GIF event logic
+        await handleGifEvent(s3Key);
+      } else if (s3Key.includes("hls")) {
+        await handleHLSEvent(s3Key);
       }
 
       deleteMessage(message.ReceiptHandle!);

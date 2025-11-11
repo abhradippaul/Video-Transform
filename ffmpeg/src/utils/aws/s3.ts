@@ -27,7 +27,11 @@ export async function downloadS3File(keyName: string, localFilePath: string) {
   });
 }
 
-export async function uploadS3File(keyName: string, localFilePath: string) {
+export async function uploadS3File(
+  keyName: string,
+  localFilePath: string,
+  contentType: string
+) {
   if (!fs.existsSync(localFilePath)) {
     throw new Error(`File not found: ${localFilePath}`);
   }
@@ -36,6 +40,7 @@ export async function uploadS3File(keyName: string, localFilePath: string) {
     Bucket: process.env.AWS_TRANSFORMED_BUCKET_NAME!,
     Key: keyName,
     Body: fs.createReadStream(localFilePath),
+    ContentType: contentType,
   };
 
   await s3Client.upload(params).promise();

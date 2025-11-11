@@ -2,8 +2,8 @@ FROM node:current-alpine3.22 AS builder
 
 WORKDIR /app
 
-COPY package.* .
-RUN npm install
+COPY package*.json ./
+RUN npm ci
 
 COPY . .
 RUN npm run build
@@ -12,10 +12,14 @@ FROM node:current-alpine3.22 AS prod
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json ./package.json 
-COPY --from=builder /app/package-lock.json ./package-lock.json 
-RUN npm install --only=production
+ENV NODE_ENV=production
+ENV PORT=8000
+
+COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
 
+RUN npm ci --omit=dev
+
+EXPOSE $PORT
 
 CMD [ "npm" , "start" ]

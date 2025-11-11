@@ -5,15 +5,15 @@ variable "env" {
 
 variable "raw_bucket_name" {
   type    = string
-  default = ""
+  default = "abhradippaul-raw-video-image-transform"
 }
 
 variable "transformed_bucket_name" {
   type    = string
-  default = ""
+  default = "abhradippaul-transformed-video-image-transform"
 }
 
 variable "sqs_name" {
   type    = string
-  default = ""
+  default = "video-image-transform"
 }
