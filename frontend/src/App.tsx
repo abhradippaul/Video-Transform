@@ -4,6 +4,8 @@ import { useState } from "react";
 import Thumbnail from "./modules/thumbnail";
 import GifComponent from "./modules/gif";
 import HLSComponent from "./modules/hls";
+import ImageResizeComponent from "./modules/image-resize";
+import VideoResolutionComponent from "./modules/video-resolution";
 
 function App() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,10 +22,7 @@ function App() {
           <Button
             onClick={() => {
               setTransformedUrl("");
-              setSearchParams((prev) => {
-                prev.set("type", "thumbnail");
-                return prev;
-              });
+              setSearchParams({ type: "thumbnail" });
             }}
           >
             Create Thumbnail
@@ -31,10 +30,7 @@ function App() {
           <Button
             onClick={() => {
               setTransformedUrl("");
-              setSearchParams((prev) => {
-                prev.set("type", "gif");
-                return prev;
-              });
+              setSearchParams({ type: "gif" });
             }}
           >
             Create GIF
@@ -42,10 +38,7 @@ function App() {
           <Button
             onClick={() => {
               setTransformedUrl("");
-              setSearchParams((prev) => {
-                prev.set("type", "hls");
-                return prev;
-              });
+              setSearchParams({ type: "hls" });
             }}
           >
             Create HLS Video
@@ -53,15 +46,19 @@ function App() {
           <Button
             onClick={() => {
               setTransformedUrl("");
-              setSearchParams((prev) => {
-                prev.set("type", "image-resize");
-                return prev;
-              });
+              setSearchParams({ type: "image-resize" });
             }}
           >
             Image Resize
           </Button>
-          <Button>Click me</Button>
+          <Button
+            onClick={() => {
+              setTransformedUrl("");
+              setSearchParams({ type: "video-res" });
+            }}
+          >
+            Video Resolution
+          </Button>
         </div>
 
         {isLoading && <h1>Loading....</h1>}
@@ -88,6 +85,26 @@ function App() {
             setSearchParams={setSearchParams}
             setTransformedUrl={setTransformedUrl}
             transformedUrl={transformedUrl}
+            searchParams={searchParams}
+            isLoading={isLoading}
+          />
+        )}
+        {searchParams.get("type") === "image-resize" && !isLoading && (
+          <ImageResizeComponent
+            setIsLoading={setIsLoading}
+            setSearchParams={setSearchParams}
+            setTransformedUrl={setTransformedUrl}
+            transformedUrl={transformedUrl}
+          />
+        )}
+        {searchParams.get("type") === "video-res" && !isLoading && (
+          <VideoResolutionComponent
+            setIsLoading={setIsLoading}
+            setSearchParams={setSearchParams}
+            setTransformedUrl={setTransformedUrl}
+            transformedUrl={transformedUrl}
+            isLoading={isLoading}
+            searchParams={searchParams}
           />
         )}
       </div>

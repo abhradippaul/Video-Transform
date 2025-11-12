@@ -44,31 +44,54 @@ export async function uploadRawData(s3PutUrl: string, file: File) {
 
 export async function getTransformedData(
   type: string,
+  mime: string,
   fileName: string,
   isFetched: boolean,
-  setTransformedUrl: Dispatch<SetStateAction<string>>
+  setTransformedUrl: Dispatch<SetStateAction<string>>,
+  singleTime = false
 ) {
-  let count = 0;
-  const intervalId = setInterval(async () => {
-    count++;
-    if (count >= 3 || !isFetched) {
-      try {
-        const response = await axios.get(
-          `${BACKEND_URL}/transformed/get-presigned-url`,
-          {
-            params: {
-              type,
-              fileName,
-            },
-          }
-        );
-        const data = response.data;
-        console.log(data);
-        setTransformedUrl(data.url || "");
-      } catch (err) {
-        console.log(err);
-      }
-      clearInterval(intervalId);
+  if (singleTime) {
+    try {
+      const response = await axios.get(
+        `${BACKEND_URL}/transformed/get-presigned-url`,
+        {
+          params: {
+            type,
+            fileName,
+            mime,
+          },
+        }
+      );
+      const data = response.data;
+      console.log(data);
+      setTransformedUrl(data.url || "");
+    } catch (err) {
+      console.log(err);
     }
-  }, 10000);
+  } else {
+    let count = 0;
+    const intervalId = setInterval(async () => {
+      count++;
+      if (count >= 3 || !isFetched) {
+        try {
+          const response = await axios.get(
+            `${BACKEND_URL}/transformed/get-presigned-url`,
+            {
+              params: {
+                type,
+                fileName,
+                mime,
+              },
+            }
+          );
+          const data = response.data;
+          console.log(data);
+          setTransformedUrl(data.url || "");
+        } catch (err) {
+          console.log(err);
+        }
+        clearInterval(intervalId);
+      }
+    }, 10000);
+  }
 }

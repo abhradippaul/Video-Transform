@@ -37,6 +37,7 @@ function GifComponent({
             await uploadRawData(s3UploadData.url, file);
             await getTransformedData(
               type,
+              mime,
               `${s3UploadData.fileName}.gif`,
               Boolean(transformedUrl),
               setTransformedUrl

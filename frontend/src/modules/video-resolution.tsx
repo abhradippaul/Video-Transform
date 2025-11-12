@@ -8,7 +8,7 @@ import {
 import type { SetURLSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-interface HLSComponentProps {
+interface VideoResolutionComponentProps {
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   isLoading: boolean;
   setSearchParams: SetURLSearchParams;
@@ -19,15 +19,15 @@ interface HLSComponentProps {
 
 const resolutions = [1080, 720, 480, 360, 240, 144];
 
-function HLSComponent({
+function VideoResolutionComponent({
   setIsLoading,
   setSearchParams,
   transformedUrl,
   setTransformedUrl,
   searchParams,
-}: HLSComponentProps) {
+}: VideoResolutionComponentProps) {
   const onCreateVideoHLS = async (file: File | null) => {
-    const type = "hls";
+    const type = "video-res";
     console.log("Uploading");
     try {
       setIsLoading(true);
@@ -53,14 +53,14 @@ function HLSComponent({
 
   const onSelectHLSResolution = async (res: number) => {
     setIsLoading(true);
-    const type = "hls";
+    const type = "video-res";
     const fileName = searchParams.get("fileName") || "";
     try {
       console.log("starting");
       await getTransformedData(
         type,
-        `${fileName}-${res}p.mp4`,
         "mp4",
+        `${fileName}-${res}p.mp4`,
         Boolean(transformedUrl),
         setTransformedUrl,
         true
@@ -88,17 +88,19 @@ function HLSComponent({
           </Button>
         ))}
       </div>
-      <video
-        src={transformedUrl || ""}
-        autoPlay
-        controls
-        height="300px"
-        width="600px"
-      />
+      {transformedUrl && (
+        <video
+          src={transformedUrl}
+          autoPlay
+          controls
+          height="300px"
+          width="600px"
+        />
+      )}
     </div>
   ) : (
     <ImageUploader onUpload={onCreateVideoHLS} fileType="video" />
   );
 }
 
-export default HLSComponent;
+export default VideoResolutionComponent;

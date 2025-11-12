@@ -27,6 +27,12 @@ resource "aws_cloudfront_distribution" "distribution" {
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     compress               = true
     target_origin_id       = "S3Origin"
+
+    lambda_function_association {
+      event_type   = "origin-response"
+      lambda_arn   = var.lambda_edge_arn
+      include_body = false
+    }
   }
 
   viewer_certificate {

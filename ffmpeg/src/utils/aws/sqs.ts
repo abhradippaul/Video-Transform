@@ -5,6 +5,7 @@ import {
   handleGifEvent,
   handleHLSEvent,
   handleThumbnailEvent,
+  handleVideoResolutionEvent,
 } from "../events.js";
 
 interface S3EventRecord {
@@ -62,6 +63,8 @@ async function reciveMessage() {
         await handleGifEvent(s3Key);
       } else if (s3Key.includes("hls")) {
         await handleHLSEvent(s3Key);
+      } else if (s3Key.includes("video-res")) {
+        await handleVideoResolutionEvent(s3Key);
       }
 
       deleteMessage(message.ReceiptHandle!);

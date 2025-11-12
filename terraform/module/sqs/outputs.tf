@@ -5,3 +5,7 @@ output "sqs_arn" {
 output "sqs_id" {
   value = aws_sqs_queue.queue.id
 }
+
+output "sqs_url" {
+  value = aws_sqs_queue.queue.url
+}

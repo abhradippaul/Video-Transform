@@ -37,6 +37,7 @@ function Thumbnail({
             await uploadRawData(s3UploadData.url, file);
             await getTransformedData(
               type,
+              mime,
               `${s3UploadData.fileName}.jpeg`,
               Boolean(transformedUrl),
               setTransformedUrl

@@ -72,3 +72,40 @@ export async function handleHLSEvent(s3Key: string) {
 
   console.log("✅ HLS processed and uploaded:");
 }
+
+export async function handleVideoResolutionEvent(s3Key: string) {
+  const resolutions = [1080, 720, 480, 360, 240, 144];
+  const fileName = s3Key.split("/")[2] || "";
+  const inputPath = `data/hls/raw/${fileName}`;
+  const outputPath = `data/hls/transformed`;
+
+  await downloadS3File(s3Key, inputPath);
+
+  await Promise.all(
+    resolutions.map((res) =>
+      convertToResolution(
+        inputPath,
+        `${outputPath}/${fileName}-${res}p.mp4`,
+        res
+      )
+    )
+  );
+
+  await Promise.all(
+    resolutions.map((res) => {
+      const outputFile = `${outputPath}/${fileName}-${res}p.mp4`;
+      const uploadKey = `video/video-res/${fileName}-${res}p.mp4`;
+      return uploadS3File(uploadKey, outputFile, "video/mp4");
+    })
+  );
+
+  await Promise.all(
+    resolutions.map((res) =>
+      deleteLocalData(`${outputPath}/${fileName}-${res}p.mp4`)
+    )
+  );
+
+  await deleteLocalData(inputPath);
+
+  console.log("✅ HLS processed and uploaded:");
+}

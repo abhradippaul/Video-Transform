@@ -1,6 +1,6 @@
 import type { DragEvent, ChangeEvent } from "react";
 
-import React, { useState } from "react";
+import { useState } from "react";
 
 interface VideoUploadProps {
   onUpload: (file: File | null) => void;
@@ -27,7 +27,7 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUpload, fileType }) => {
     if (file && file.type.startsWith(`${fileType}/`)) {
       setSelectedFile(file);
     } else {
-      alert("Please drop a valid video file.");
+      alert("Please drop a valid image/video file.");
     }
   };
 
@@ -36,7 +36,7 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUpload, fileType }) => {
     if (file && file.type.startsWith(`${fileType}/`)) {
       setSelectedFile(file);
     } else {
-      alert("Please select a valid video file.");
+      alert("Please select a valid image/video file.");
     }
   };
 
@@ -50,9 +50,8 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUpload, fileType }) => {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 border rounded-2xl shadow-md bg-white text-center">
-      <h2 className="text-xl font-semibold mb-4">Upload Your Image or Video</h2>
+      <h2 className="text-xl font-semibold mb-4">Upload Your {fileType}</h2>
 
-      {/* Upload Zone */}
       {!selectedFile ? (
         <div
           onDragOver={handleDragOver}
@@ -65,13 +64,12 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUpload, fileType }) => {
         >
           <p className="text-gray-500">
             {dragging
-              ? "Drop your video here..."
-              : "Drag & drop a video file, or click to browse"}
+              ? `Drop your ${fileType} here...`
+              : `Drag & drop a ${fileType} file, or click to browse`}
           </p>
         </div>
       ) : (
         <div>
-          {/* Video Preview */}
           {selectedFile.type.split("/")[0] === "video" && (
             <video
               controls
@@ -94,40 +92,31 @@ const VideoUpload: React.FC<VideoUploadProps> = ({ onUpload, fileType }) => {
           </p>
 
           <div className="flex flex-col gap-y-4 items-center justify-center">
-            {/* Remove Button */}
             {selectedFile && (
               <button
                 onClick={handleRemove}
                 className="bg-red-500 w-1/2 cursor-pointer text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
               >
-                Remove{" "}
-                {selectedFile.type.split("/")[0] === "image"
-                  ? "Image"
-                  : "Video"}
+                Remove {fileType === "image" ? "Image" : "Video"}
               </button>
             )}
 
-            {/* Upload Button */}
             {selectedFile && (
               <button
                 onClick={handleUpload}
                 className="bg-blue-600 w-1/2 cursor-pointer text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
               >
-                Upload{" "}
-                {selectedFile.type.split("/")[0] === "image"
-                  ? "Image"
-                  : "Video"}
+                Upload {fileType === "image" ? "Image" : "Video"}
               </button>
             )}
           </div>
         </div>
       )}
 
-      {/* Hidden File Input */}
       <input
         id="fileInput"
         type="file"
-        accept="video/*"
+        accept={`${fileType}/*`}
         className="hidden"
         onChange={handleFileChange}
       />
