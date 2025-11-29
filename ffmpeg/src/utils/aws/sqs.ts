@@ -4,21 +4,10 @@ import { AWS } from "./aws.js";
 import {
   handleGifEvent,
   handleHLSEvent,
+  handleImageResizeEvent,
   handleThumbnailEvent,
   handleVideoResolutionEvent,
 } from "../events.js";
-
-interface S3EventRecord {
-  s3: {
-    object: {
-      key: string;
-    };
-  };
-}
-
-interface S3EventBody {
-  Records: S3EventRecord[];
-}
 
 const s3UploadNotificationSQS = new AWS.SQS();
 const queueUrl = process.env.AWS_S3_UPLOAD_SQS!;
@@ -50,21 +39,27 @@ async function reciveMessage() {
     for (const message of Messages) {
       if (!message.Body) continue;
 
-      const body: S3EventBody = JSON.parse(message.Body);
+      console.log(message);
+
+      const body = JSON.parse(message.Body);
 
       const s3Key = body?.Records?.[0]?.s3?.object?.key;
-      if (!s3Key) continue;
+      if (s3Key) {
+        console.log("📩 Processing S3 Key:", s3Key);
 
-      console.log("📩 Processing S3 Key:", s3Key);
-
-      if (s3Key.includes("thumbnail")) {
-        await handleThumbnailEvent(s3Key);
-      } else if (s3Key.includes("gif")) {
-        await handleGifEvent(s3Key);
-      } else if (s3Key.includes("hls")) {
-        await handleHLSEvent(s3Key);
-      } else if (s3Key.includes("video-res")) {
-        await handleVideoResolutionEvent(s3Key);
+        if (s3Key.includes("thumbnail")) {
+          await handleThumbnailEvent(s3Key);
+        } else if (s3Key.includes("gif")) {
+          await handleGifEvent(s3Key);
+        } else if (s3Key.includes("hls")) {
+          await handleHLSEvent(s3Key);
+        } else if (s3Key.includes("video-res")) {
+          await handleVideoResolutionEvent(s3Key);
+        }
+      } else if (body.uri) {
+        if (body.uri.includes("image-resize")) {
+          await handleImageResizeEvent(body.uri);
+        }
       }
 
       deleteMessage(message.ReceiptHandle!);

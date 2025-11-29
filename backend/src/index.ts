@@ -100,23 +100,15 @@ app.get("/image/transformed/get-presigned-url", async (req, res) => {
   }
 
   if (query.qualty === undefined) {
-    query.format = "50";
+    query.quality = "50";
   }
 
   let s3Url = "";
 
   if (CLOUDFRONT === "true") {
-    s3Url = `https://${CLOUDFRONT_URL}/${
-      query.mime === "mp4" ? "video/" : "image/"
-    }${query.type}/${query.fileName}?format=${query.fomat}&height=${
-      query.height
-    }&width=${query.height}&quality=${query.quality}`;
+    s3Url = `https://${CLOUDFRONT_URL}/image/${query.type}/${query.fileName}_${query.mime}_${query.height}_${query.height}_${query.quality}.${query.format}`;
   } else if (CLOUDFRONT === "false") {
-    s3Url = await getS3SignedUrl(
-      `${query.mime === "mp4" ? "video/" : "image/"}${query.type}/${
-        query.fileName
-      }`
-    );
+    s3Url = await getS3SignedUrl(`/image/${query.type}/${query.fileName}`);
   }
 
   if (!s3Url) {

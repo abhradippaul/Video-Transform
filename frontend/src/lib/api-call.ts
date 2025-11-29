@@ -95,3 +95,37 @@ export async function getTransformedData(
     }, 10000);
   }
 }
+
+export async function getTransformedImageData(
+  type: string,
+  fileName: string,
+  setTransformedUrl: Dispatch<SetStateAction<string>>,
+  format: string,
+  height: string,
+  width: string,
+  quality: string,
+  mime: string
+) {
+  try {
+    const response = await axios.get(
+      `${BACKEND_URL}/image/transformed/get-presigned-url`,
+      {
+        params: {
+          type,
+          fileName,
+          format,
+          height,
+          width,
+          quality,
+          mime,
+        },
+      }
+    );
+
+    const data = response.data;
+    console.log(data.url);
+    setTransformedUrl(data.url || "");
+  } catch (err) {
+    console.log(err);
+  }
+}

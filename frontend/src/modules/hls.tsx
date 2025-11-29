@@ -1,12 +1,13 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useRef, type Dispatch, type SetStateAction } from "react";
 import ImageUploader from "./video-upload";
+import videojs from "video.js";
 import {
   getS3UploadData,
   getTransformedData,
   uploadRawData,
 } from "@/lib/api-call";
 import type { SetURLSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import VideoPlayer from "./videojs";
 
 interface HLSComponentProps {
   setIsLoading: Dispatch<SetStateAction<boolean>>;
@@ -16,8 +17,6 @@ interface HLSComponentProps {
   setTransformedUrl: Dispatch<SetStateAction<string>>;
   searchParams: URLSearchParams;
 }
-
-const resolutions = [1080, 720, 480, 360, 240, 144];
 
 function HLSComponent({
   setIsLoading,
@@ -41,6 +40,15 @@ function HLSComponent({
               return prev;
             });
             await uploadRawData(s3UploadData.url, file);
+            setTimeout(async () => {
+              await getTransformedData(
+                type,
+                mime,
+                `${s3UploadData.fileName}`,
+                Boolean(transformedUrl),
+                setTransformedUrl
+              );
+            }, 10000);
           }
         }
       }
@@ -51,51 +59,12 @@ function HLSComponent({
     }
   };
 
-  const onSelectHLSResolution = async (res: number) => {
-    setIsLoading(true);
-    const type = "hls";
-    const fileName = searchParams.get("fileName") || "";
-    try {
-      console.log("starting");
-      await getTransformedData(
-        type,
-        `${fileName}-${res}p.mp4`,
-        "mp4",
-        Boolean(transformedUrl),
-        setTransformedUrl,
-        true
-      );
-      console.log("ending");
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return searchParams.get("fileName") ? (
-    <div className="w-full flex items-center justify-center flex-col gap-y-5">
-      <div className="flex items-center justify-between w-1/2">
-        {resolutions.map((e) => (
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            onClick={() => onSelectHLSResolution(e)}
-            key={e}
-          >
-            {e}
-          </Button>
-        ))}
-      </div>
-      <video
-        src={transformedUrl || ""}
-        autoPlay
-        controls
-        height="300px"
-        width="600px"
-      />
-    </div>
+    transformedUrl ? (
+      <VideoPlayer src={`${transformedUrl}/index.m3u8`} />
+    ) : (
+      <div />
+    )
   ) : (
     <ImageUploader onUpload={onCreateVideoHLS} fileType="video" />
   );

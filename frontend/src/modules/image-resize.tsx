@@ -2,7 +2,7 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import ImageUploader from "./video-upload";
 import {
   getS3UploadData,
-  getTransformedData,
+  getTransformedImageData,
   uploadRawData,
 } from "@/lib/api-call";
 import type { SetURLSearchParams } from "react-router-dom";
@@ -17,9 +17,9 @@ interface ImageResizeComponentProps {
 
 interface Obj {
   format: string;
-  height: number;
-  width: number;
-  quality: number;
+  height: string;
+  width: string;
+  quality: string;
 }
 
 function ImageResizeComponent({
@@ -30,9 +30,9 @@ function ImageResizeComponent({
 }: ImageResizeComponentProps) {
   const [obj, setObj] = useState<Obj>({
     format: "auto",
-    height: 200,
-    width: 200,
-    quality: 50,
+    height: "200",
+    width: "200",
+    quality: "50",
   });
   const onCreateVideoGif = async (file: File | null) => {
     const type = "image-resize";
@@ -47,19 +47,25 @@ function ImageResizeComponent({
             setSearchParams((prev) => {
               prev.set("fileName", `${s3UploadData.fileName}`);
               prev.set("format", `${obj.format}`);
+              prev.set("mime", `${mime}`);
               prev.set("height", `${obj.height}`);
               prev.set("width", `${obj.width}`);
               prev.set("quality", `${obj.quality}`);
               return prev;
             });
             await uploadRawData(s3UploadData.url, file);
-            await getTransformedData(
-              type,
-              mime,
-              `${s3UploadData.fileName}`,
-              Boolean(transformedUrl),
-              setTransformedUrl
-            );
+            setInterval(async () => {
+              await getTransformedImageData(
+                type,
+                `${s3UploadData.fileName}`,
+                setTransformedUrl,
+                obj.format,
+                obj.height,
+                obj.width,
+                obj.quality,
+                mime
+              );
+            }, 5000);
           }
         }
       }
@@ -70,9 +76,7 @@ function ImageResizeComponent({
     }
   };
 
-  return transformedUrl ? (
-    <img src={transformedUrl} alt="image" />
-  ) : (
+  return (
     <div className="w-full">
       <form className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-white rounded-2xl shadow-md">
         {/* Format */}
@@ -107,7 +111,7 @@ function ImageResizeComponent({
             onChange={(e) =>
               setObj((prev) => ({
                 ...prev,
-                height: Number(e.target.value),
+                height: e.target.value,
               }))
             }
             placeholder="e.g. 1080"
@@ -127,7 +131,7 @@ function ImageResizeComponent({
             onChange={(e) =>
               setObj((prev) => ({
                 ...prev,
-                width: Number(e.target.value),
+                width: e.target.value,
               }))
             }
             placeholder="e.g. 1920"
@@ -150,7 +154,7 @@ function ImageResizeComponent({
             onChange={(e) =>
               setObj((prev) => ({
                 ...prev,
-                quality: Number(e.target.value),
+                quality: e.target.value,
               }))
             }
             placeholder="e.g. 80"
@@ -158,8 +162,12 @@ function ImageResizeComponent({
           />
         </div>
       </form>
-
-      <ImageUploader onUpload={onCreateVideoGif} fileType="image" />
+      <h1>{transformedUrl || "none"}</h1>
+      {transformedUrl ? (
+        <img src={transformedUrl} alt="image" />
+      ) : (
+        <ImageUploader onUpload={onCreateVideoGif} fileType="image" />
+      )}
     </div>
   );
 }

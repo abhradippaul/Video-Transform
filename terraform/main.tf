@@ -5,8 +5,8 @@ module "raw_bucket" {
   bucket_name         = var.raw_bucket_name
   env                 = var.env
   enable_notification = true
-  # cloudfront_arn      = module.cloudfront.cloudfront_arn
-  cloudfront_arn = ""
+  cloudfront_arn      = module.cloudfront.cloudfront_arn
+  # cloudfront_arn = ""
 }
 
 module "transformed_bucket" {
@@ -15,8 +15,8 @@ module "transformed_bucket" {
   bucket_name         = var.transformed_bucket_name
   env                 = var.env
   enable_notification = false
-  # cloudfront_arn      = module.cloudfront.cloudfront_arn
-  cloudfront_arn = ""
+  cloudfront_arn      = module.cloudfront.cloudfront_arn
+  # cloudfront_arn = ""
 }
 
 module "lambda" {
@@ -27,12 +27,12 @@ module "lambda" {
   }
 }
 
-# module "cloudfront" {
-#   source          = "./module/cloudfront"
-#   s3_domain_name  = module.transformed_bucket.bucket_domain_name
-#   price_class     = "PriceClass_100"
-#   lambda_edge_arn = "${module.lambda.lambda_edge_arn}:${module.lambda.lambda_version}"
-# }
+module "cloudfront" {
+  source          = "./module/cloudfront"
+  s3_domain_name  = module.transformed_bucket.bucket_domain_name
+  price_class     = "PriceClass_100"
+  lambda_edge_arn = "${module.lambda.lambda_edge_arn}:${module.lambda.lambda_version}"
+}
 
 module "sqs" {
   source     = "./module/sqs"

@@ -4,7 +4,6 @@ import { useState } from "react";
 import Thumbnail from "./modules/thumbnail";
 import GifComponent from "./modules/gif";
 import HLSComponent from "./modules/hls";
-import ImageResizeComponent from "./modules/image-resize";
 import VideoResolutionComponent from "./modules/video-resolution";
 
 function App() {
@@ -14,7 +13,7 @@ function App() {
 
   return (
     <div className="w-screen h-screen flex items-center justify-center">
-      <div className="max-w-[900px] w-[90%] h-[500px] flex items-center justify-center flex-col">
+      <div className="max-w-[900px] w-[90%] h-[500px] flex items-center justify-center flex-col gap-y-4">
         <h1 className="font-medium text-2xl text-muted-foreground ">
           Select an option
         </h1>
@@ -43,14 +42,14 @@ function App() {
           >
             Create HLS Video
           </Button>
-          <Button
+          {/* <Button
             onClick={() => {
               setTransformedUrl("");
               setSearchParams({ type: "image-resize" });
             }}
           >
             Image Resize
-          </Button>
+          </Button> */}
           <Button
             onClick={() => {
               setTransformedUrl("");
@@ -89,14 +88,14 @@ function App() {
             isLoading={isLoading}
           />
         )}
-        {searchParams.get("type") === "image-resize" && !isLoading && (
+        {/* {searchParams.get("type") === "image-resize" && !isLoading && (
           <ImageResizeComponent
             setIsLoading={setIsLoading}
             setSearchParams={setSearchParams}
             setTransformedUrl={setTransformedUrl}
             transformedUrl={transformedUrl}
           />
-        )}
+        )} */}
         {searchParams.get("type") === "video-res" && !isLoading && (
           <VideoResolutionComponent
             setIsLoading={setIsLoading}
